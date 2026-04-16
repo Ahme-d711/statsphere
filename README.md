@@ -23,6 +23,8 @@ bun dev
 
 ### 2. Analysis Service
 ```bash
+python3 -m venv venv
+source venv/bin/activate
 pip install -r analysis/requirements.txt
 cd analysis
 python3 main.py
