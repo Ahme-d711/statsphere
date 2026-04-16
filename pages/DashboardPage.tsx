@@ -10,29 +10,41 @@ import { ExportControls } from "@/components/dashboard/export-controls";
 import { UploadFooter } from "@/components/upload/upload-footer";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import { useSearchParams } from "next/navigation";
-import { MEDICAL_DATA, ENGINEERING_DATA, DashboardData } from "@/lib/mock-dashboard-data";
+import { useRouter, useSearchParams } from "next/navigation";
+import { DashboardData } from "@/lib/mock-dashboard-data";
 import { useAnalytics } from "@/context/AnalyticsContext";
 import { InsightsReport } from "@/components/dashboard/insights-report";
 
 export default function DashboardPage() {
   const { results } = useAnalytics();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const domainParam = searchParams?.get("domain");
-  const [loading, setLoading] = useState(true);
+  const [checking, setChecking] = useState(true);
 
   const activeDomain =
     domainParam === "engineering" ? "engineering" : "medical";
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1500);
-    return () => clearTimeout(timer);
-  }, []);
+    // If we have results, stop checking. 
+    // If not, give it a tiny moment to ensure context is hydrated
+    if (results) {
+      setChecking(false);
+    } else {
+      const timer = setTimeout(() => {
+        if (!results) {
+          router.push("/upload");
+        }
+        setChecking(false);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [results, router]);
 
-  // Prioritize API results from context, fallback to static mock for previewing/demo
-  const data: DashboardData = (results as any) || (activeDomain === "medical" ? MEDICAL_DATA : ENGINEERING_DATA);
+  // Use real results only
+  const data = results as unknown as DashboardData;
 
-  if (loading) {
+  if (checking || !data) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
@@ -69,7 +81,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-background to-background flex flex-col">
       <Navbar />
 
-      <main className="container mx-auto px-4 py-12 flex-grow">
+      <main id="dashboard-content" className="container mx-auto px-4 py-12 flex-grow">
         <DashboardHeader
           datasetName={data.datasetName}
           domain={activeDomain}
@@ -85,7 +97,7 @@ export default function DashboardPage() {
           regression={data.advanced.regression}
         />
 
-        <ExportControls />
+        <ExportControls data={data} domain={activeDomain} />
       </main>
 
       <UploadFooter />

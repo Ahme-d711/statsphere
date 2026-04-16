@@ -1,22 +1,128 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion } from "framer-motion";
 import { Download, FileText, FileCode, CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { DashboardData } from "@/lib/mock-dashboard-data";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
-export const ExportControls = () => {
+interface ExportControlsProps {
+  data: DashboardData;
+  domain: string;
+}
+
+export const ExportControls = ({ data, domain }: ExportControlsProps) => {
   const [exporting, setExporting] = useState<"none" | "pdf" | "csv">("none");
   const [success, setSuccess] = useState<"none" | "pdf" | "csv">("none");
 
-  const handleExport = (type: "pdf" | "csv") => {
-    setExporting(type);
-    setTimeout(() => {
-      setExporting("none");
-      setSuccess(type);
+  const handleCSVExport = () => {
+    setExporting("csv");
+    
+    try {
+      // 1. Prepare CSV Header
+      const headers = ["Metric", "Value"];
+      const rows = [
+        ["Dataset Name", data.datasetName],
+        ["Domain", domain],
+        ["Analysis Date", new Date().toLocaleDateString()],
+        [], // empty row for separator
+        ["SUMMARY STATISTICS", ""],
+      ];
+
+      // 2. Add Stats
+      data.stats.forEach(stat => {
+        rows.push([stat.label, stat.value]);
+      });
+
+      rows.push([], ["DISTRIBUTION DATA", ""]);
+      
+      // 3. Add Charts Data (mapped from bar chart)
+      data.charts.bar.forEach(item => {
+        rows.push([item.name, item.value.toString()]);
+      });
+
+      // 4. Convert to CSV String
+      const csvContent = "data:text/csv;charset=utf-8," 
+        + rows.map(e => e.join(",")).join("\n");
+
+      // 5. Trigger Download
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `StatSphere_${domain}_Analysis.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setSuccess("csv");
       setTimeout(() => setSuccess("none"), 3000);
-    }, 2000);
+    } catch (error) {
+      console.error("CSV Export failed:", error);
+    } finally {
+      setExporting("none");
+    }
+  };
+
+  const handlePDFExport = async () => {
+    setExporting("pdf");
+    const element = document.getElementById("dashboard-content");
+    
+    if (!element) {
+      setExporting("none");
+      return;
+    }
+
+    // --- Safe Capture Mode: CSS Override ---
+    // html2canvas fails on oklch/lab colors. We temporarily inject 
+    // standard HEX overrides for the capture duration.
+    const style = document.createElement("style");
+    style.innerHTML = `
+      #dashboard-content, #dashboard-content * {
+        background-color: #ffffff !important;
+        color: #1a1a1a !important;
+        border-color: #e5e7eb !important;
+        stop-color: #1a1a1a !important;
+      }
+      .bg-primary { background-color: #1a1a1a !important; }
+      .text-primary-foreground { color: #ffffff !important; }
+      .text-muted-foreground { color: #6b7280 !important; }
+      .border-primary\\/20 { border-color: #e5e7eb !important; }
+    `;
+    document.head.appendChild(style);
+
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+        // Ignore elements that might still cause issues
+        ignoreElements: (el) => el.classList.contains("framer-motion-container")
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`StatSphere_${domain}_Report.pdf`);
+
+      setSuccess("pdf");
+      setTimeout(() => setSuccess("none"), 3000);
+    } catch (error) {
+      console.error("PDF Export failed:", error);
+    } finally {
+      document.head.removeChild(style); // Cleanup
+      setExporting("none");
+    }
   };
 
   return (
@@ -37,7 +143,7 @@ export const ExportControls = () => {
         <Button
           size="lg"
           variant="outline"
-          onClick={() => handleExport("pdf")}
+          onClick={handlePDFExport}
           disabled={exporting !== "none"}
           className="rounded-2xl h-14 px-8 border-primary/20 hover:bg-white hover:text-primary hover:border-primary/40 font-black shadow-lg transition-all"
         >
@@ -53,7 +159,7 @@ export const ExportControls = () => {
 
         <Button
           size="lg"
-          onClick={() => handleExport("csv")}
+          onClick={handleCSVExport}
           disabled={exporting !== "none"}
           className="rounded-2xl h-14 px-8 bg-primary text-primary-foreground hover:bg-primary/90 font-black shadow-xl shadow-primary/20 transition-all"
         >
@@ -68,7 +174,6 @@ export const ExportControls = () => {
         </Button>
       </div>
 
-      {/* Decorative background effects */}
       <div className="absolute top-0 right-0 h-40 w-40 bg-primary/5 rounded-full blur-3xl -translate-y-20 translate-x-20" />
       <div className="absolute bottom-0 left-0 h-40 w-40 bg-primary/5 rounded-full blur-3xl translate-y-20 -translate-x-20" />
     </div>
