@@ -12,10 +12,13 @@ import { Loader2 } from "lucide-react";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 
+import { useAnalytics } from "@/context/AnalyticsContext";
+
 export default function UploadPage() {
+  const { setDataset, resetAnalysis } = useAnalytics();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [parsedData, setParsedData] = useState<any[]>([]);
-  const [columns, setColumns] = useState<string[]>([]);
+  const [localPreviewData, setLocalPreviewData] = useState<any[]>([]);
+  const [localColumns, setLocalColumns] = useState<string[]>([]);
   const [isParsing, setIsParsing] = useState(false);
 
   const handleFileSelect = (file: File) => {
@@ -31,9 +34,11 @@ export default function UploadPage() {
           header: true,
           preview: 10,
           complete: (results) => {
-            setParsedData(results.data);
+            setLocalPreviewData(results.data.slice(0, 10)); // Keep only first 10 for preview
             if (results.data.length > 0) {
-              setColumns(Object.keys(results.data[0] as Record<string, unknown>));
+              const headers = Object.keys(results.data[0] as Record<string, unknown>);
+              setLocalColumns(headers);
+              setDataset(results.data as any[], headers);
             }
             setIsParsing(false);
           },
@@ -48,19 +53,21 @@ export default function UploadPage() {
         const worksheet = workbook.Sheets[firstSheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-        if (jsonData.length > 0) {
-          const headers = jsonData[0] as string[];
-          const rows = jsonData.slice(1, 11).map((row: any) => {
-            const obj: any = {};
-            headers.forEach((header, index) => {
-              obj[header] = row[index];
+          if (jsonData.length > 0) {
+            const headers = jsonData[0] as string[];
+            const fullData = jsonData.slice(1).map((row: any) => {
+              const obj: any = {};
+              headers.forEach((header, index) => {
+                obj[header] = row[index];
+              });
+              return obj;
             });
-            return obj;
-          });
-          setColumns(headers);
-          setParsedData(rows);
-        }
-        setIsParsing(false);
+            const previewRows = fullData.slice(0, 10);
+            setLocalColumns(headers);
+            setLocalPreviewData(previewRows);
+            setDataset(fullData, headers);
+          }
+          setIsParsing(false);
       };
       reader.readAsArrayBuffer(file);
     }
@@ -68,8 +75,9 @@ export default function UploadPage() {
 
   const handleFileRemove = () => {
     setSelectedFile(null);
-    setParsedData([]);
-    setColumns([]);
+    setLocalPreviewData([]);
+    setLocalColumns([]);
+    resetAnalysis();
   };
 
   return (
@@ -101,9 +109,9 @@ export default function UploadPage() {
             </motion.div>
           )}
 
-          {!isParsing && selectedFile && parsedData.length > 0 && (
+          {!isParsing && selectedFile && localPreviewData.length > 0 && (
             <>
-              <DataPreview data={parsedData} columns={columns} />
+              <DataPreview data={localPreviewData} columns={localColumns} />
               <AnalyzeButton />
             </>
           )}

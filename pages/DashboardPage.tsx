@@ -12,8 +12,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import { useSearchParams } from "next/navigation";
 import { MEDICAL_DATA, ENGINEERING_DATA, DashboardData } from "@/lib/mock-dashboard-data";
+import { useAnalytics } from "@/context/AnalyticsContext";
+import { InsightsReport } from "@/components/dashboard/insights-report";
 
 export default function DashboardPage() {
+  const { results } = useAnalytics();
   const searchParams = useSearchParams();
   const domainParam = searchParams?.get("domain");
   const [loading, setLoading] = useState(true);
@@ -26,7 +29,8 @@ export default function DashboardPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  const data: DashboardData = activeDomain === "medical" ? MEDICAL_DATA : ENGINEERING_DATA;
+  // Prioritize API results from context, fallback to static mock for previewing/demo
+  const data: DashboardData = (results as any) || (activeDomain === "medical" ? MEDICAL_DATA : ENGINEERING_DATA);
 
   if (loading) {
     return (
@@ -79,6 +83,11 @@ export default function DashboardPage() {
           matrix={data.advanced.matrix}
           labels={data.advanced.labels}
           regression={data.advanced.regression}
+        />
+
+        <InsightsReport 
+           executiveSummary={data.insights.executiveSummary}
+           items={data.insights.items}
         />
 
         <ExportControls />

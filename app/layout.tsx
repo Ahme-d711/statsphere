@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 };
 
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AnalyticsProvider } from "@/context/AnalyticsContext";
 
 export default function RootLayout({
   children,
@@ -30,7 +31,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <TooltipProvider>{children}</TooltipProvider>
+        <AnalyticsProvider>
+          <TooltipProvider>{children}</TooltipProvider>
+        </AnalyticsProvider>
       </body>
     </html>
   );

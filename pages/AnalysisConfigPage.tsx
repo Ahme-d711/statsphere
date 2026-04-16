@@ -9,40 +9,23 @@ import { ColumnSelector } from "@/components/analysis/column-selector";
 import { ModuleSelector } from "@/components/analysis/module-selector";
 import { UploadFooter } from "@/components/upload/upload-footer";
 import { Button } from "@/components/ui/button";
-import { Play, RotateCcw, ArrowLeft, Settings2 } from "lucide-react";
+import { Play, RotateCcw, ArrowLeft, Settings2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAnalytics } from "@/context/AnalyticsContext";
 
 export default function AnalysisConfigPage() {
   const router = useRouter();
+  const { dataset, columns: contextColumns, isLoading, runAnalysis } = useAnalytics();
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
 
-  const handleRunAnalysis = () => {
-    if (canRun) {
+  const handleRunAnalysis = async () => {
+    if (canRun && selectedModule) {
+      await runAnalysis(selectedModule as "medical" | "engineering", selectedOptions);
       router.push(`/dashboard?domain=${selectedModule}`);
     }
-  };
-
-  // Mock data for demonstration
-  const mockDataset = {
-    rowCount: 12540,
-    colCount: 24,
-    columns: [
-      "Patient_ID",
-      "Age",
-      "Gender",
-      "Blood_Pressure",
-      "Cholesterol",
-      "Glucose",
-      "Heart_Rate",
-      "BMI",
-      "Diagnosis",
-      "Treatment_Date",
-      "Recovery_Index",
-      "Medication_Dosage",
-    ],
   };
 
   const handleOptionToggle = (id: string) => {
@@ -101,13 +84,22 @@ export default function AnalysisConfigPage() {
             </Button>
             <Button
               size="lg"
-              disabled={!canRun}
+              disabled={!canRun || isLoading}
               onClick={handleRunAnalysis}
               className="rounded-2xl h-12 px-10 text-lg font-bold shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all group overflow-hidden relative"
             >
               <span className="relative z-10 flex items-center gap-2">
-                Run Analysis
-                <Play className="h-5 w-5 fill-current" />
+                {isLoading ? (
+                  <>
+                    Processing...
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  </>
+                ) : (
+                  <>
+                    Run Analysis
+                    <Play className="h-5 w-5 fill-current" />
+                  </>
+                )}
               </span>
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -119,9 +111,9 @@ export default function AnalysisConfigPage() {
 
         <div className="space-y-8">
           <DatasetSummary
-            rowCount={mockDataset.rowCount}
-            colCount={mockDataset.colCount}
-            columns={mockDataset.columns}
+            rowCount={dataset?.length || 0}
+            colCount={contextColumns.length}
+            columns={contextColumns}
           />
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -133,7 +125,7 @@ export default function AnalysisConfigPage() {
             </div>
             <div className="lg:col-span-1">
               <ColumnSelector
-                options={mockDataset.columns}
+                options={contextColumns}
                 selectedColumns={selectedColumns}
                 onChange={setSelectedColumns}
               />
