@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import pandas as pd
 import numpy as np
 
@@ -10,6 +10,7 @@ class AnalysisRequest(BaseModel):
     dataset: List[Dict[str, Any]]
     domain: str = "general"
     options: List[str] = []
+    selected_columns: Optional[List[str]] = None
 
 @app.get("/")
 def read_root():
@@ -23,6 +24,14 @@ async def analyze_data(request: AnalysisRequest):
 
         if df.empty:
             raise HTTPException(status_code=400, detail="Dataset is empty")
+
+        # 1.5 Filter Columns if specified
+        if request.selected_columns and len(request.selected_columns) > 0:
+            # Filter only those that actually exist in the dataframe
+            valid_cols = [c for c in request.selected_columns if c in df.columns]
+            if not valid_cols:
+                raise HTTPException(status_code=400, detail="None of the selected columns found in dataset")
+            df = df[valid_cols]
 
         # 2. Pre-processing: Handle numeric columns only for stats
         for col in df.columns:

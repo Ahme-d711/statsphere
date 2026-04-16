@@ -23,7 +23,7 @@ export default function AnalysisConfigPage() {
 
   const handleRunAnalysis = async () => {
     if (canRun && selectedModule) {
-      await runAnalysis(selectedModule as "medical" | "engineering", selectedOptions);
+      await runAnalysis(selectedModule as "medical" | "engineering", selectedOptions, selectedColumns);
       router.push(`/dashboard?domain=${selectedModule}`);
     }
   };

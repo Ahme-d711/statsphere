@@ -3,17 +3,17 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { dataset, domain, options } = body;
+    const { dataset, domain, options, selectedColumns } = body;
 
     // Validation
-    if (!dataset || (Array.isArray(dataset) && dataset.length === 0)) {
+    if (!dataset || !Array.isArray(dataset) || dataset.length === 0) {
       return NextResponse.json(
-        { error: "Dataset is empty or invalid" },
+        { error: "Dataset is required and cannot be empty" },
         { status: 400 }
       );
     }
 
-    console.log(`[API Analyze] Processing ${domain} dataset with ${dataset.length} records. Options: ${options.join(", ")}`);
+    console.log(`[API Analyze] Processing ${domain} dataset with ${dataset.length} records. Options: ${options.join(", ")}, Columns: ${selectedColumns?.length || 'All'}`);
 
     // Call the Python FastAPI Analysis Service
     const pythonServiceUrl = process.env.PYTHON_SERVICE_URL || "http://localhost:8000/analyze";
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     const analysisResponse = await fetch(pythonServiceUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ dataset, domain, options }),
+      body: JSON.stringify({ dataset, domain, options, selected_columns: selectedColumns }),
     });
 
     if (!analysisResponse.ok) {

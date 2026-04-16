@@ -43,7 +43,7 @@ interface AnalyticsContextType {
   isLoading: boolean;
   error: string | null;
   setDataset: (data: any[], cols: string[]) => void;
-  runAnalysis: (domain: "medical" | "engineering", options: string[]) => Promise<void>;
+  runAnalysis: (domain: "medical" | "engineering", options: string[], selectedColumns: string[]) => Promise<void>;
   resetAnalysis: () => void;
 }
 
@@ -62,14 +62,14 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
     setResults(null); // Clear previous results when new data is uploaded
   };
 
-  const runAnalysis = async (domain: "medical" | "engineering", options: string[]) => {
+  const runAnalysis = async (domain: "medical" | "engineering", options: string[], selectedColumns: string[]) => {
     setIsLoading(true);
     setError(null);
     try {
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dataset, domain, options }),
+        body: JSON.stringify({ dataset, domain, options, selectedColumns }),
       });
 
       if (!response.ok) {
