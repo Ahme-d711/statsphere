@@ -85,11 +85,6 @@ export default function DashboardPage() {
           regression={data.advanced.regression}
         />
 
-        <InsightsReport 
-           executiveSummary={data.insights.executiveSummary}
-           items={data.insights.items}
-        />
-
         <ExportControls />
       </main>
 
