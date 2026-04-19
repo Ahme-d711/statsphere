@@ -82,12 +82,23 @@ export const ExportControls = ({ data, domain }: ExportControlsProps) => {
         background-color: #ffffff !important;
         color: #1a1a1a !important;
         border-color: #e5e7eb !important;
-        stop-color: #1a1a1a !important;
+        fill: #1a1a1a !important;
+        stroke: #e5e7eb !important;
+        background-image: none !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
       }
-      .bg-primary { background-color: #1a1a1a !important; }
-      .text-primary-foreground { color: #ffffff !important; }
-      .text-muted-foreground { color: #6b7280 !important; }
-      .border-primary\\/20 { border-color: #e5e7eb !important; }
+      .recharts-cartesian-grid-horizontal line,
+      .recharts-cartesian-grid-vertical line {
+        stroke: #f3f4f6 !important;
+      }
+      .recharts-bar-rectangle path {
+        fill: #000000 !important;
+      }
+      .recharts-area-path {
+        fill: #cccccc !important;
+        stroke: #000000 !important;
+      }
     `;
     document.head.appendChild(style);
 

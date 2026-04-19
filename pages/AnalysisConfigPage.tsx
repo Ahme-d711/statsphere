@@ -17,7 +17,7 @@ import { useAnalytics } from "@/context/AnalyticsContext";
 export default function AnalysisConfigPage() {
   const router = useRouter();
   const { dataset, columns: contextColumns, isLoading, runAnalysis } = useAnalytics();
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [selectedOptions, setSelectedOptions] = useState<string[]>(["mean", "median", "std_dev"]);
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
 

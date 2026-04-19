@@ -23,27 +23,6 @@ export const Navbar = () => {
           </span>
         </Link>
 
-        <nav className="hidden md:flex items-center space-x-6">
-          <Link
-            href="/upload"
-            className="text-sm font-medium text-foreground transition-colors hover:text-primary"
-          >
-            Upload
-          </Link>
-          <Link
-            href="/dashboard"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-          >
-            Dashboard
-          </Link>
-          <Link
-            href="#"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-          >
-            History
-          </Link>
-        </nav>
-
         <div className="flex items-center space-x-4">
           <div className="h-8 w-8 rounded-full bg-secondary ring-2 ring-border overflow-hidden">
             <div className="h-full w-full flex items-center justify-center text-xs font-semibold text-muted-foreground uppercase">
