@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import DashboardPage from "@/pages/DashboardPage";
+import DashboardPage from "@/components/page-views/dashboard-view";
 
 export default function Page() {
   return (
