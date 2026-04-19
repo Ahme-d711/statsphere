@@ -5,15 +5,13 @@ import { Navbar } from "@/components/layout/navbar";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { StatsGrid } from "@/components/dashboard/stats-grid";
 import { ChartGallery } from "@/components/dashboard/chart-gallery";
-import { AdvancedAnalysis } from "@/components/dashboard/advanced-analysis";
 import { ExportControls } from "@/components/dashboard/export-controls";
 import { UploadFooter } from "@/components/upload/upload-footer";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { DashboardData } from "@/lib/mock-dashboard-data";
-import { useAnalytics } from "@/context/AnalyticsContext";
-import { InsightsReport } from "@/components/dashboard/insights-report";
+import { AnalysisResults, useAnalytics } from "@/context/AnalyticsContext";
 
 export default function DashboardPage() {
   const { results } = useAnalytics();
@@ -42,13 +40,13 @@ export default function DashboardPage() {
   }, [results, router]);
 
   // Use real results only
-  const data = results as unknown as DashboardData;
+  const data = results as AnalysisResults;
 
   if (checking || !data) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
-        <main className="container mx-auto px-4 py-12 flex-grow">
+        <main className="container mx-auto px-4 py-12 grow">
           <div className="space-y-8">
             <div className="flex justify-between items-end">
                <div className="space-y-2">
@@ -78,10 +76,10 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-background to-background flex flex-col">
+    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top, var(--tw-gradient-stops))] from-primary/5 via-background to-background flex flex-col">
       <Navbar />
 
-      <main id="dashboard-content" className="container mx-auto px-4 py-12 flex-grow">
+      <main id="dashboard-content" className="container mx-auto px-4 py-12 grow">
         <DashboardHeader
           datasetName={data.datasetName}
           domain={activeDomain}
@@ -90,12 +88,6 @@ export default function DashboardPage() {
         <StatsGrid stats={data.stats} />
 
         <ChartGallery chartsData={data.charts} />
-
-        <AdvancedAnalysis 
-          matrix={data.advanced.matrix}
-          labels={data.advanced.labels}
-          regression={data.advanced.regression}
-        />
 
         <ExportControls data={data} domain={activeDomain} />
       </main>

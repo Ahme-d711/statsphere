@@ -3,17 +3,18 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
 export interface AnalysisResults {
-  summary: {
-    mean: number;
-    median: number;
-    stdDev: number;
-    totalRecords: number;
-  };
+  datasetName: string;
+  stats: {
+    label: string;
+    value: string;
+    trend: "up" | "down" | "neutral";
+    percentage: string;
+  }[];
   charts: {
-    distribution: { name: string; value: number }[];
-    trend: { name: string; value: number }[];
-    pie?: { name: string; value: number }[];
-    breakdown?: { label: string; value: number }[];
+    bar: { name: string; value: number }[];
+    line: { name: string; value: number }[];
+    pie: { name: string; value: number }[];
+    breakdown: { label: string; value: number }[];
   };
   advanced: {
     matrix: number[][];
@@ -28,11 +29,7 @@ export interface AnalysisResults {
   };
   insights: {
     executiveSummary: string;
-    items: {
-      type: "positive" | "neutral" | "warning";
-      title: string;
-      text: string;
-    }[];
+    items: any[];
   };
 }
 

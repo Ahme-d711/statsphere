@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
+import { motion } from "framer-motion";
 import { Navbar } from "@/components/layout/navbar";
 import { DatasetSummary } from "@/components/analysis/dataset-summary";
 import { AnalysisOptions } from "@/components/analysis/analysis-options";
@@ -43,7 +43,7 @@ export default function AnalysisConfigPage() {
   const canRun = selectedOptions.length > 0 && selectedModule !== null;
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-background to-background">
+    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top, var(--tw-gradient-stops))] from-primary/5 via-background to-background">
       <Navbar />
 
       <main className="container mx-auto px-4 py-12 md:py-16">
@@ -102,7 +102,7 @@ export default function AnalysisConfigPage() {
                 )}
               </span>
               <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute inset-0 bg-linear-to-r from-primary to-primary/80 opacity-0 group-hover:opacity-100 transition-opacity"
                 initial={false}
               />
             </Button>
