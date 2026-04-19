@@ -51,7 +51,7 @@ export const AnalysisOptions = ({
             >
               <Label
                 htmlFor={option.id}
-                className="flex flex-col cursor-pointer flex-grow"
+                className="flex flex-col cursor-pointer grow"
               >
                 <span className="font-bold text-foreground">{option.label}</span>
               </Label>
